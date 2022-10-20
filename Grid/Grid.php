@@ -27,6 +27,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\TemplateWrapper;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Routing\RouterInterface;
 
 class Grid implements GridInterface
 {
@@ -323,16 +325,17 @@ class Grid implements GridInterface
      * @param string                   $id        set if you are using more then one grid inside controller
      * @param GridConfigInterface|null $config    The grid configuration.
      */
-    public function __construct($container, $id = '', GridConfigInterface $config = null)
+    // public function __construct($container, $id = '', GridConfigInterface $config = null, AuthorizationChecker $securityContext)
+    public function __construct($id = '', GridConfigInterface $config = null, RouterInterface $router)
     {
         // @todo: why the whole container is injected?
-        $this->container = $container;
+        // $this->container = $container;
         $this->config = $config;
 
-        $this->router = $container->get('router');
+        $this->router = $router; //$container->get('router');
         $this->request = $container->get('request_stack')->getCurrentRequest();
         $this->session = $this->request->getSession();
-        $this->securityContext = $container->get('security.authorization_checker');
+        $this->securityContext = $securityContext;
 
         $this->id = $id;
 
