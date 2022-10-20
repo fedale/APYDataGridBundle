@@ -43,7 +43,7 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      * @param string               $name      The name of the grid
      * @param array                $options   The options of the grid
      */
-    public function __construct(GridFactoryInterface $factory, $name, array $options = [])
+    public function __construct(Container $container, GridFactoryInterface $factory, $name, array $options = [])
     {
         parent::__construct($name, $options);
 
@@ -80,7 +80,7 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      * {@inheritdoc}
      */
     public function get($name)
-    {
+    {        
         if (!$this->has($name)) {
             throw new InvalidArgumentException(sprintf('The column with the name "%s" does not exist.', $name));
         }
