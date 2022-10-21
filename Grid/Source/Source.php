@@ -102,9 +102,8 @@ abstract class Source implements DriverInterface
      *
      * @abstract
      *
-     * @param  $container
      */
-    abstract public function initialise($container);
+    abstract public function initialise();
 
     /**
      * @abstract

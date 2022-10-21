@@ -25,11 +25,14 @@ use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\Tools\Pagination\CountWalker;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpKernel\Kernel;
+use Doctrine\Persistence\ManagerRegistry;
 
 class Entity extends Source
 {
     const DOT_DQL_ALIAS_PH = '__dot__';
     const COLON_DQL_ALIAS_PH = '__col__';
+
+   
 
     /**
      * @var \Doctrine\ORM\EntityManager
@@ -122,12 +125,19 @@ class Entity extends Source
      */
     const TABLE_ALIAS = '_a';
 
+       /**
+     * @var \Doctrine\Persistence\ManagerRegistry
+     * @ddm
+     */
+    protected $doctrine; 
+
     /**
      * @param string $entityName  e.g Cms:Page
      * @param string $managerName e.g. mydatabase
      */
-    public function __construct($entityName, $group = 'default', $managerName = null)
+    public function __construct(ManagerRegistry $doctrine, $entityName, $group = 'default', $managerName = null)
     {
+        $this->doctrine = $doctrine;
         $this->entityName = $entityName;
         $this->managerName = $managerName;
         $this->joins = [];
@@ -136,11 +146,13 @@ class Entity extends Source
         $this->setTableAlias(self::TABLE_ALIAS);
     }
 
-    public function initialise($container)
+    // public function initialise($container)
+    public function initialise()
     {
-        $doctrine = $container->get('doctrine');
+        // $doctrine = $container->get('doctrine');
+        //$this->doctrine = $doctrine;
 
-        $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $doctrine->getManager($this->managerName) : $doctrine->getEntityManager($this->managerName);
+        $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $this->doctrine->getManager($this->managerName) : $this->doctrine->getEntityManager($this->managerName);
         $this->ormMetadata = $this->manager->getClassMetadata($this->entityName);
 
         $this->class = $this->ormMetadata->getReflectionClass()->name;

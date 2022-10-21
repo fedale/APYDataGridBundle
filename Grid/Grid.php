@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Twig\TemplateWrapper;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class Grid implements GridInterface
 {
@@ -325,15 +326,14 @@ class Grid implements GridInterface
      * @param string                   $id        set if you are using more then one grid inside controller
      * @param GridConfigInterface|null $config    The grid configuration.
      */
-     public function __construct($container, $id = '', GridConfigInterface $config = null, AuthorizationChecker $securityContext)
-//    public function __construct($id = '', GridConfigInterface $config = null, RouterInterface $router)
+     public function __construct(RouterInterface $router, RequestStack $requestStack, AuthorizationChecker $securityContext, $id = '', GridConfigInterface $config = null)
     {
         // @todo: why the whole container is injected?
-        $this->container = $container;
+        // $this->container = $container;
         $this->config = $config;
 
-        $this->router = $container->get('router');
-        $this->request = $container->get('request_stack')->getCurrentRequest();
+        $this->router = $router; //$container->get('router');
+        $this->request = $requestStack->getCurrentRequest(); //$container->get('request_stack')->getCurrentRequest();
         $this->session = $this->request->getSession();
         // $this->securityContext = $securityContext;
         $this->securityContext = $securityContext; //$container->get('security.authorization_checker');
@@ -399,6 +399,7 @@ class Grid implements GridInterface
 
         // Source
         $source = $config->getSource();
+dd($source);
 
         if (null !== $source) {
             $this->source = $source;
@@ -490,7 +491,8 @@ class Grid implements GridInterface
 
         $this->source = $source;
 
-        $this->source->initialise($this->container);
+        // $this->source->initialise($this->container);
+        $this->source->initialise();
 
         // Get columns from the source
         $this->source->getColumns($this->columns);
