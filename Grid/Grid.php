@@ -399,7 +399,6 @@ class Grid implements GridInterface
 
         // Source
         $source = $config->getSource();
-dd($source);
 
         if (null !== $source) {
             $this->source = $source;

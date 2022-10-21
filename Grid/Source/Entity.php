@@ -26,13 +26,12 @@ use Doctrine\ORM\Tools\Pagination\CountWalker;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpKernel\Kernel;
 use Doctrine\Persistence\ManagerRegistry;
+use APY\DataGridBundle\Grid\Mapping\Metadata\Manager;
 
 class Entity extends Source
 {
     const DOT_DQL_ALIAS_PH = '__dot__';
     const COLON_DQL_ALIAS_PH = '__col__';
-
-   
 
     /**
      * @var \Doctrine\ORM\EntityManager
@@ -135,8 +134,9 @@ class Entity extends Source
      * @param string $entityName  e.g Cms:Page
      * @param string $managerName e.g. mydatabase
      */
-    public function __construct(ManagerRegistry $doctrine, $entityName, $group = 'default', $managerName = null)
+    public function __construct(ManagerRegistry $doctrine, $entityName = null, $group = 'default', $managerName = null, Manager $manager)
     {
+        // dd($doctrine, $entityName, $group, $managerName);
         $this->doctrine = $doctrine;
         $this->entityName = $entityName;
         $this->managerName = $managerName;

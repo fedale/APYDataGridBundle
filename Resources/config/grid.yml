@@ -6,11 +6,9 @@ services:
     apy_grid.registry:
         class: APY\DataGridBundle\Grid\GridRegistry
     # @ddm
-    # apy_grid.entity:
-    #     class: APY\DataGridBundle\Source\Entity
-    #     arguments: 
-    #         - $doctrine: '@doctrine'
-
+    apy_grid.source.entity:
+        class: APY\DataGridBundle\Grid\Source\Entity
+        arguments: ['@doctrine']
 
     # Types
     apy_grid.type.grid:
