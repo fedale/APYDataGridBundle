@@ -39,6 +39,11 @@ class Entity extends Source
     protected $manager;
 
     /**
+     * @var  \APY\DataGridBundle\Grid\Mapping\Metadata\Manager;
+     */
+    protected $gridManager;
+
+    /**
      * @var \Doctrine\ORM\QueryBuilder
      */
     protected $query;
@@ -134,31 +139,39 @@ class Entity extends Source
      * @param string $entityName  e.g Cms:Page
      * @param string $managerName e.g. mydatabase
      */
-    public function __construct(ManagerRegistry $doctrine, $entityName = null, $group = 'default', $managerName = null, Manager $manager)
+    public function __construct(ManagerRegistry $doctrine,   Manager $gridManager, $entityName = null, $group = 'default', $managerName = null,)
+    //public function __construct($entityName = null, $group = 'default', $managerName = null,)
     {
-        // dd($doctrine, $entityName, $group, $managerName);
+        //dd($registry, $manager, $entityName, $group, $managerName);
         $this->doctrine = $doctrine;
         $this->entityName = $entityName;
         $this->managerName = $managerName;
+        $this->gridManager = $gridManager;
         $this->joins = [];
         $this->group = $group;
         $this->hints = [];
         $this->setTableAlias(self::TABLE_ALIAS);
     }
-
+    public function setSource($entityName = null, $group = 'default', $managerName = null)
+    {
+        $this->entityName = $entityName;
+        return $this;
+    }
     // public function initialise($container)
     public function initialise()
     {
         // $doctrine = $container->get('doctrine');
         //$this->doctrine = $doctrine;
 
-        $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $this->doctrine->getManager($this->managerName) : $this->doctrine->getEntityManager($this->managerName);
+        // $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $this->doctrine->getManager($this->managerName) : $this->doctrine->getEntityManager($this->managerName);
+        $this->manager = $this->doctrine->getManager($this->managerName);
         $this->ormMetadata = $this->manager->getClassMetadata($this->entityName);
 
         $this->class = $this->ormMetadata->getReflectionClass()->name;
 
-        $mapping = $container->get('grid.mapping.manager');
+        $mapping = $this->gridManager; //$container->get('grid.mapping.manager');
 
+       
         /* todo autoregister mapping drivers with tag */
         $mapping->addDriver($this, -1);
         $this->metadata = $mapping->getMetadata($this->class, $this->group);
@@ -596,6 +609,7 @@ class Entity extends Source
 
     public function getTotalCount($maxResults = null)
     {
+        return 30;
         // Doctrine Bug Workaround: http://www.doctrine-project.org/jira/browse/DDC-1927
         $countQueryBuilder = clone $this->query;
 

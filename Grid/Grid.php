@@ -27,6 +27,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\TemplateWrapper;
+use Twig\Environment;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -319,6 +320,9 @@ class Grid implements GridInterface
      */
     private $config;
 
+    // \Twig\Environment
+    private $twig;
+
     /**
      * Constructor.
      *
@@ -326,7 +330,13 @@ class Grid implements GridInterface
      * @param string                   $id        set if you are using more then one grid inside controller
      * @param GridConfigInterface|null $config    The grid configuration.
      */
-     public function __construct(RouterInterface $router, RequestStack $requestStack, AuthorizationChecker $securityContext, $id = '', GridConfigInterface $config = null)
+     public function __construct(
+        RouterInterface $router, 
+        RequestStack $requestStack, 
+        AuthorizationChecker $securityContext, 
+        Environment $twig,
+        $id = '', 
+        GridConfigInterface $config = null)
     {
         // @todo: why the whole container is injected?
         // $this->container = $container;
@@ -335,6 +345,7 @@ class Grid implements GridInterface
         $this->router = $router; //$container->get('router');
         $this->request = $requestStack->getCurrentRequest(); //$container->get('request_stack')->getCurrentRequest();
         $this->session = $this->request->getSession();
+        $this->twig = $twig;
         // $this->securityContext = $securityContext;
         $this->securityContext = $securityContext; //$container->get('security.authorization_checker');
 
@@ -2154,7 +2165,7 @@ class Grid implements GridInterface
             if ($view === null) {
                 return $parameters;
             } else {
-                return new Response($this->container->get('twig')->render($view, $parameters, $response));
+                return new Response($this->twig->render($view, $parameters, $response));
             }
         }
     }
