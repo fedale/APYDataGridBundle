@@ -33,9 +33,9 @@ class GridFactory implements GridFactoryInterface
      * @param Container             $container The service container
      * @param GridRegistryInterface $registry  The grid registry
      */
-    public function __construct(Container $container, GridRegistryInterface $registry)
+    // public function __construct(GridRegistryInterface $registry)
+    public function __construct(GridRegistryInterface $registry)
     {
-        $this->container = $container;
         $this->registry = $registry;
     }
 
@@ -55,7 +55,7 @@ class GridFactory implements GridFactoryInterface
         $type = $this->resolveType($type);
         $options = $this->resolveOptions($type, $source, $options);
 
-        $builder = new GridBuilder($this->container, $this, $type->getName(), $options);
+        $builder = new GridBuilder($this, $type->getName(), $options);
         $builder->setType($type);
 
         $type->buildGrid($builder, $options);

@@ -31,6 +31,7 @@ use Twig\Environment;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class Grid implements GridInterface
 {
@@ -64,11 +65,6 @@ class Grid implements GridInterface
     const GET_FILTERS_NO_REQUEST_HANDLED_EX_MSG = 'getFilters method is only available in the manipulate callback function or after the call of the method isRedirected of the grid.';
     const HAS_FILTER_NO_REQUEST_HANDLED_EX_MSG = 'hasFilters method is only available in the manipulate callback function or after the call of the method isRedirected of the grid.';
     const TWEAK_NOT_DEFINED_EX_MSG = 'Tweak %s is not defined.';
-
-    /**
-     * @var \Symfony\Component\DependencyInjection\Container
-     */
-    protected $container;
 
     /**
      * @var \Symfony\Component\Routing\Router
@@ -323,10 +319,12 @@ class Grid implements GridInterface
     // \Twig\Environment
     private $twig;
 
+    // Symfony\Component\HttpKernel\HttpKernelInterface 
+    private $httpKernel;
+
     /**
      * Constructor.
      *
-     * @param Container                $container
      * @param string                   $id        set if you are using more then one grid inside controller
      * @param GridConfigInterface|null $config    The grid configuration.
      */
@@ -335,15 +333,14 @@ class Grid implements GridInterface
         RequestStack $requestStack, 
         AuthorizationChecker $securityContext, 
         Environment $twig,
+        HttpKernelInterface $httpKernel,
         $id = '', 
         GridConfigInterface $config = null)
     {
-        // @todo: why the whole container is injected?
-        // $this->container = $container;
         $this->config = $config;
 
-        $this->router = $router; //$container->get('router');
-        $this->request = $requestStack->getCurrentRequest(); //$container->get('request_stack')->getCurrentRequest();
+        $this->router = $router;
+        $this->request = $requestStack->getCurrentRequest();
         $this->session = $this->request->getSession();
         $this->twig = $twig;
         // $this->securityContext = $securityContext;
@@ -414,7 +411,7 @@ class Grid implements GridInterface
         if (null !== $source) {
             $this->source = $source;
 
-            $source->initialise($this->container);
+            $source->initialise();
 
             if ($source instanceof Entity) {
                 $groupBy = $config->getGroupBy();
@@ -680,7 +677,8 @@ class Grid implements GridInterface
 
                     $subRequest = $this->request->duplicate([], null, $path);
 
-                    $this->massActionResponse = $this->container->get('http_kernel')->handle($subRequest, \Symfony\Component\HttpKernel\HttpKernelInterface::SUB_REQUEST);
+                    // $this->massActionResponse = $this->container->get('http_kernel')->handle($subRequest, \Symfony\Component\HttpKernel\HttpKernelInterface::SUB_REQUEST);
+                    $this->massActionResponse = $this->httpKernel->handle($subRequest, \Symfony\Component\HttpKernel\HttpKernelInterface::SUB_REQUEST);
                 } else {
                     throw new \RuntimeException(sprintf(self::MASS_ACTION_CALLBACK_NOT_VALID_EX_MSG, $action->getCallback()));
                 }

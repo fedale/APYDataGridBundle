@@ -19,7 +19,7 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      *
      * @var Container
      */
-    private $container;
+    // private $container;
 
     /**
      * The factory.
@@ -43,20 +43,12 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      * @param string               $name      The name of the grid
      * @param array                $options   The options of the grid
      */
-    public function __construct(Container $container, GridFactoryInterface $factory, $name, array $options = [])
+    public function __construct(GridFactoryInterface $factory, $name, array $options = [])
     {
         parent::__construct($name, $options);
 
-        // $this->container = $container;
         $this->factory = $factory;
     }
-    // public function __construct(Container $container, GridFactoryInterface $factory, $name, array $options = [])
-    // {
-    //     parent::__construct($name, $options);
-
-    //     $this->container = $container;
-    //     $this->factory = $factory;
-    // }
 
     /**
      * {@inheritdoc}
@@ -115,7 +107,6 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
     {
         $config = $this->getGridConfig();
 
-        // $grid = new Grid($this->container, $config->getName(), $config);
         $grid = new Grid($config->getName(), $config);
 
         foreach ($this->columns as $column) {

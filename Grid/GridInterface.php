@@ -23,5 +23,5 @@ interface GridInterface
      *
      * @param Request $request The request
      */
-    public function handleRequest(Request $request);
+    // public function handleRequest(Request $request);
 }

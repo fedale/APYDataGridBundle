@@ -14,6 +14,7 @@ namespace APY\DataGridBundle\Grid;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use APY\DataGridBundle\Grid\Grid;
 
 class GridManager implements \IteratorAggregate, \Countable
 {
@@ -31,9 +32,12 @@ class GridManager implements \IteratorAggregate, \Countable
 
     const SAME_GRID_HASH_EX_MSG = 'Some grids seem similar. Please set an Indentifier for your grids.';
 
-    public function __construct($container)
+    // APY\DataGridBundle\Grid\Grid 
+    private $grid;
+
+    public function __construct(Grid $grid)
     {
-        $this->container = $container;
+        $this->grid = $grid;
         $this->grids = new \SplObjectStorage();
     }
 
@@ -54,15 +58,13 @@ class GridManager implements \IteratorAggregate, \Countable
      */
     public function createGrid($id = null)
     {
-        $grid = $this->container->get('grid');
-
         if ($id !== null) {
-            $grid->setId($id);
+            $this->grid->setId($id);
         }
 
-        $this->grids->attach($grid);
+        $this->grids->attach($this->grid);
 
-        return $grid;
+        return $this->grid;
     }
 
     public function isReadyForRedirect()
