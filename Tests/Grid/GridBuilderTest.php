@@ -1,6 +1,6 @@
 <?php
 
-namespace APY\DataGridBundle\Tests\Grid;
+namespace APY\DataGridBundle\Grid\Tests;
 
 use APY\DataGridBundle\Grid\Column\Column;
 use APY\DataGridBundle\Grid\Exception\InvalidArgumentException;
@@ -78,7 +78,7 @@ class GridBuilderTest extends TestCase
             }));
 
         $this->factory = $this->createMock(GridFactoryInterface::class);
-        $this->builder = new GridBuilder($this->container, $this->factory, 'name');
+        $this->builder = new GridBuilder($this->factory, 'name');
     }
 
     public function testAddUnexpectedType()

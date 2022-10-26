@@ -49,14 +49,23 @@ class Vector extends Source
      */
     protected $columns;
 
-    /**
-     * Creates the Vector and sets its data.
-     *
-     * @param array $data
-     * @param array $columns
-     */
-    public function __construct(array $data, array $columns = [])
+    protected $columnService;
+
+    public function __construct(Column $columnService)
     {
+        $this->columnService = $columnService;
+    }
+
+    public function setup(array $parameters)
+    {
+        $defaults = [
+            "data" => null,
+            "columns" => [],
+        ];
+
+        $data = isset($parameters["data"]) ? $parameters["data"] : $defaults["data"];
+        $columns = isset($parameters["columns"]) ? $parameters["columns"] : $defaults["columns"];
+
         if (!empty($data)) {
             $this->setData($data);
         }
@@ -64,7 +73,7 @@ class Vector extends Source
         $this->setColumns($columns);
     }
 
-    public function initialise($container)
+    public function initialise()
     {
         if (!empty($this->data)) {
             $this->guessColumns();
@@ -87,7 +96,7 @@ class Vector extends Source
                     'visible'    => true,
                     'field'      => $id,
                 ];
-                $guessedColumns[] = new UntypedColumn($params);
+                $guessedColumns[] = new UntypedColumn($this->columnService, $params);
             }
         }
 
@@ -164,23 +173,23 @@ class Vector extends Source
             if ($c instanceof UntypedColumn) {
                 switch ($c->getType()) {
                     case 'date':
-                        $column = new DateColumn($c->getParams());
+                        $column = new DateColumn($this->columnService, $c->getParams());
                         break;
                     case 'datetime':
-                        $column = new DateTimeColumn($c->getParams());
+                        $column = new DateTimeColumn($this->columnService, $c->getParams());
                         break;
                     case 'boolean':
-                        $column = new BooleanColumn($c->getParams());
+                        $column = new BooleanColumn($this->columnService, $c->getParams());
                         break;
                     case 'number':
-                        $column = new NumberColumn($c->getParams());
+                        $column = new NumberColumn($this->columnService, $c->getParams());
                         break;
                     case 'array':
-                        $column = new ArrayColumn($c->getParams());
+                        $column = new ArrayColumn($this->columnService, $c->getParams());
                         break;
                     case 'text':
                     default:
-                        $column = new TextColumn($c->getParams());
+                        $column = new TextColumn($this->columnService, $c->getParams());
                         break;
                 }
             } else {

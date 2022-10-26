@@ -1,6 +1,6 @@
 <?php
 
-namespace APY\DataGridBundle\Tests\Grid\Source;
+namespace APY\DataGridBundle\Grid\Tests\Source;
 
 use APY\DataGridBundle\Grid\Column\Column;
 use APY\DataGridBundle\Grid\Columns;
@@ -1003,7 +1003,7 @@ class DocumentTest extends TestCase
             ->willReturn($metadata);
 
         $containerGetMap = [
-            ['doctrine.odm.mongodb.document_manager', Container::EXCEPTION_ON_INVALID_REFERENCE, $documentManager],
+            ['doctrine_mongodb.odm.document_manager', Container::EXCEPTION_ON_INVALID_REFERENCE, $documentManager],
             ['grid.mapping.manager', Container::EXCEPTION_ON_INVALID_REFERENCE, $mapping]
         ];
 
@@ -1017,7 +1017,7 @@ class DocumentTest extends TestCase
             ->method('addDriver')
             ->with($this->document, -1);
 
-        $this->document->initialise($container);
+        $this->document->initialise();
     }
 
     private function stubBuilder(array $documents = [])

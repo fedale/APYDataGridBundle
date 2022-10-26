@@ -3,9 +3,12 @@
 namespace APY\DataGridBundle\Grid;
 
 use APY\DataGridBundle\Grid\Column\Column;
+use APY\DataGridBundle\Grid\Column\ColumnInterface;
 use APY\DataGridBundle\Grid\Exception\InvalidArgumentException;
 use APY\DataGridBundle\Grid\Exception\UnexpectedTypeException;
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * A builder for creating Grid instances.
@@ -14,13 +17,6 @@ use Symfony\Component\DependencyInjection\Container;
  */
 class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
 {
-    /**
-     * The container.
-     *
-     * @var Container
-     */
-    // private $container;
-
     /**
      * The factory.
      *
@@ -35,19 +31,47 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      */
     private $columns = [];
 
+    protected $requestStack;
+    protected $router;
+    protected $authorizationChecker;
+    protected $httpKernel;
+    protected $twig;
+    protected $columnService;
+
     /**
-     * Constructor.
+     * GridBuilder constructor.
      *
-     * @param Container            $container The service container
-     * @param GridFactoryInterface $factory   The grid factory
-     * @param string               $name      The name of the grid
-     * @param array                $options   The options of the grid
+     * @param GridFactoryInterface $factory The grid factory
+     * @param object $requestStack
+     * @param RouterInterface $router
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param HttpKernelInterface $httpKernel
+     * @param object $twig
+     * @param object $columnService
+     * @param string $name The name of the grid
+     * @param array $options The options of the grid
      */
-    public function __construct(GridFactoryInterface $factory, $name, array $options = [])
+    public function __construct(
+        GridFactoryInterface $factory,
+        object $requestStack,
+        RouterInterface $router,
+        AuthorizationCheckerInterface $authorizationChecker,
+        HttpKernelInterface $httpKernel,
+        object $twig,
+        object $columnService,
+        $name,
+        array $options = []
+    )
     {
         parent::__construct($name, $options);
 
         $this->factory = $factory;
+        $this->requestStack = $requestStack;
+        $this->router = $router;
+        $this->authorizationChecker = $authorizationChecker;
+        $this->httpKernel = $httpKernel;
+        $this->twig = $twig;
+        $this->columnService = $columnService;
     }
 
     /**
@@ -55,7 +79,7 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      */
     public function add($name, $type, array $options = [])
     {
-        if (!$type instanceof Column) {
+        if (!$type instanceof ColumnInterface) {
             if (!is_string($type)) {
                 throw new UnexpectedTypeException($type, 'string, APY\DataGridBundle\Grid\Column\Column');
             }
@@ -72,7 +96,7 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
      * {@inheritdoc}
      */
     public function get($name)
-    {        
+    {
         if (!$this->has($name)) {
             throw new InvalidArgumentException(sprintf('The column with the name "%s" does not exist.', $name));
         }
@@ -107,7 +131,16 @@ class GridBuilder extends GridConfigBuilder implements GridBuilderInterface
     {
         $config = $this->getGridConfig();
 
-        $grid = new Grid($config->getName(), $config);
+        $grid = new Grid(
+            $this->requestStack,
+            $this->router,
+            $this->authorizationChecker,
+            $this->httpKernel,
+            $this->twig,
+            $this->columnService,
+            $config->getName(),
+            $config,
+        );
 
         foreach ($this->columns as $column) {
             $grid->addColumn($column);

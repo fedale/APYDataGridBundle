@@ -1,6 +1,6 @@
 <?php
 
-namespace APY\DataGridBundle\Tests\Grid;
+namespace APY\DataGridBundle\Grid\Tests;
 
 use APY\DataGridBundle\Grid\Filter;
 use PHPUnit\Framework\TestCase;

@@ -30,7 +30,6 @@ class Source
         $this->sortable = isset($metadata['sortable']) ? $metadata['sortable'] : true;
         $this->groups = (isset($metadata['groups']) && $metadata['groups'] != '') ? (array) $metadata['groups'] : ['default'];
         $this->groupBy = (isset($metadata['groupBy']) && $metadata['groupBy'] != '') ? (array) $metadata['groupBy'] : [];
-        dump($metadata, $columns);
     }
 
     public function getColumns()

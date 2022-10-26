@@ -17,7 +17,6 @@ use APY\DataGridBundle\Grid\Column\Column;
 use APY\DataGridBundle\Grid\Column\JoinColumn;
 use APY\DataGridBundle\Grid\Row;
 use APY\DataGridBundle\Grid\Rows;
-use Doctrine\ORM\Internal\SQLResultCasing;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
@@ -26,25 +25,26 @@ use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\Tools\Pagination\CountWalker;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpKernel\Kernel;
-use Doctrine\Persistence\ManagerRegistry;
-use APY\DataGridBundle\Grid\Mapping\Metadata\Manager;
 
 class Entity extends Source
 {
-    use SQLResultCasing;
-
     const DOT_DQL_ALIAS_PH = '__dot__';
     const COLON_DQL_ALIAS_PH = '__col__';
+
+    /**
+     * @var \Doctrine\Bundle\DoctrineBundle\Registry
+     */
+    protected $doctrine;
+
+    /**
+     * @var \APY\DataGridBundle\Grid\Mapping\Metadata\Manager
+     */
+    protected $mapping;
 
     /**
      * @var \Doctrine\ORM\EntityManager
      */
     protected $manager;
-
-    /**
-     * @var  \APY\DataGridBundle\Grid\Mapping\Metadata\Manager;
-     */
-    protected $gridManager;
 
     /**
      * @var \Doctrine\ORM\QueryBuilder
@@ -132,47 +132,43 @@ class Entity extends Source
      */
     const TABLE_ALIAS = '_a';
 
-       /**
-     * @var \Doctrine\Persistence\ManagerRegistry
-     * @ddm
-     */
-    protected $doctrine; 
-
     /**
      * @param string $entityName  e.g Cms:Page
      * @param string $managerName e.g. mydatabase
      */
-    public function __construct(ManagerRegistry $doctrine,   Manager $gridManager, $entityName = null, $group = 'default', $managerName = null,)
-    //public function __construct($entityName = null, $group = 'default', $managerName = null,)
+    public function __construct(object $doctrine, object $mapping)
     {
-        //dd($registry, $manager, $entityName, $group, $managerName);
         $this->doctrine = $doctrine;
-        $this->entityName = $entityName;
-        $this->managerName = $managerName;
-        $this->gridManager = $gridManager;
+        $this->mapping = $mapping;
+
         $this->joins = [];
-        $this->group = $group;
         $this->hints = [];
         $this->setTableAlias(self::TABLE_ALIAS);
     }
-    public function setSource($entityName = null, $group = 'default', $managerName = null)
+
+    public function setup(array $parameters)
     {
-        $this->entityName = $entityName;
-        return $this;
+        $defaults = [
+            "entity" => null,
+            "group" => "default",
+            "managerName" => null,
+        ];
+
+        $this->entityName = isset($parameters["entity"]) ? $parameters["entity"] : $defaults["entity"];
+        $this->group = isset($parameters["group"]) ? $parameters["group"] : $defaults["group"];
+        $this->managerName = isset($parameters["managerName"]) ? $parameters["managerName"] : $defaults["managerName"];
     }
+
     public function initialise()
     {
-        $this->manager = $this->doctrine->getManager($this->managerName);
+        $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $this->doctrine->getManager($this->managerName) : $this->doctrine->getEntityManager($this->managerName);
         $this->ormMetadata = $this->manager->getClassMetadata($this->entityName);
 
         $this->class = $this->ormMetadata->getReflectionClass()->name;
 
-        $mapping = $this->gridManager;
-
-       
         /* todo autoregister mapping drivers with tag */
-        $mapping->addDriver($this, -1);
-        $this->metadata = $mapping->getMetadata($this->class, $this->group);
+        $this->mapping->addDriver($this, -1);
+        $this->metadata = $this->mapping->getMetadata($this->class, $this->group);
 
         $this->groupBy = $this->metadata->getGroupBy();
     }
@@ -632,8 +628,7 @@ class Entity extends Source
             $platform = $countQuery->getEntityManager()->getConnection()->getDatabasePlatform(); // law of demeter win
 
             $rsm = new ResultSetMapping();
-            $rsm->addScalarResult($this->getSQLResultCasing($platform,'dctrn_count'), 'count');
-            //$rsm->addScalarResult($platform->getSQLResultCasing('dctrn_count'), 'count');
+            $rsm->addScalarResult($platform->getSQLResultCasing('dctrn_count'), 'count');
 
             $countQuery->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'Doctrine\ORM\Tools\Pagination\CountOutputWalker');
             $countQuery->setResultSetMapping($rsm);

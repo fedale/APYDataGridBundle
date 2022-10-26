@@ -1,5 +1,5 @@
 {
-    "name": "apy/datagrid-bundle",
+    "name": "ddm/datagrid-bundle",
     "description": "Symfony Datagrid Bundle",
     "keywords": ["Symfony", "datagrid"],
     "homepage": "https://github.com/apy/APYDataGridBundle",
@@ -17,28 +17,25 @@
         {
             "name": "Evan Owens",
             "email": "eaowens@gmail.com"
-        },
-        {
-            "name": "Nicolas Potier",
-            "email": "contact@acseo.fr"
         }
     ],
     "require": {
-        "php": ">=7.2|^8.0",
-        "symfony/form": "~3.0|^4.0|^5.0|^6.0",
-        "symfony/dependency-injection": "~3.0|^4.0|^5.0|^6.0",
-        "symfony/config": "~3.0|^4.0|^5.0|^6.0",
-        "symfony/http-foundation": "~3.0|^4.0|^5.0|^6.0",
-        "symfony/http-kernel": "~3.0|^4.0|^5.0|^6.0",
-        "symfony/options-resolver": "~3.0|^4.0|^5.0|^6.0",
-        "symfony/serializer": "~3.0|^4.0|^5.0|^6.0",
-        "twig/twig": "^2.12|^3.0"
+        "php": "^7.4||^8.0",
+        "symfony/form": "^5.3|^6.1",
+        "symfony/dependency-injection": "^5.3|^6.1",
+        "symfony/config": "^5.3|^6.1",
+        "symfony/http-foundation": "^5.3|^6.1",
+        "symfony/http-kernel": "^5.3|^6.1",
+        "symfony/options-resolver": "^5.3|^6.1",
+        "symfony/security-guard": "^5.3|^6.1",
+        "symfony/serializer": "^5.3|^6.1",
+        "twig/twig": "^3.4"
     },
     "require-dev": {
-        "symfony/framework-bundle": "~3.0|^4.0|^5.0",
-        "symfony/browser-kit": "~3.0|^4.0|^5.0",
-        "symfony/templating": "~3.0|^4.0|^5.0",
-        "symfony/expression-language": "~3.0|^4.0|^5.0",
+        "symfony/framework-bundle": "^5.3|^6.1",
+        "symfony/browser-kit": "^5.3|^6.1",
+        "symfony/templating": "^5.3|^6.1",
+        "symfony/expression-language": "^5.3|^6.1",
         "phpunit/phpunit": "~5.7",
         "friendsofphp/php-cs-fixer": "^2.0",
         "php-coveralls/php-coveralls": "^2.0",
@@ -48,17 +45,12 @@
     "suggest": {
         "ext-intl": "Translate the grid",
         "ext-mbstring": "Convert your data with the right charset",
-        "PHPExcel": "Export the grid (Excel, HTML or PDF)",
+        "phpoffice/phpspreadsheet": "Export the grid (Excel or HTML)",
         "doctrine/orm": "If you want to use Entity as source, please require doctrine/orm",
         "doctrine/mongodb-odm": "If you want to use Document as source, please require doctrine/mongodb-odm"
     },
     "autoload": {
         "psr-4": { "APY\\DataGridBundle\\": "" }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "3.2-dev"
-        }
     },
     "provide": {
         "ext-mongo": "1.5"

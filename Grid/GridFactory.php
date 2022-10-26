@@ -3,10 +3,13 @@
 namespace APY\DataGridBundle\Grid;
 
 use APY\DataGridBundle\Grid\Column\Column;
+use APY\DataGridBundle\Grid\Column\ColumnInterface;
 use APY\DataGridBundle\Grid\Exception\UnexpectedTypeException;
 use APY\DataGridBundle\Grid\Source\Source;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * Class GridFactory.
@@ -16,27 +19,39 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class GridFactory implements GridFactoryInterface
 {
     /**
-     * The service container.
-     *
-     * @var Container
-     */
-    private $container;
-
-    /**
      * @var GridRegistryInterface
      */
     private $registry;
 
+    protected $requestStack;
+    protected $router;
+    protected $authorizationChecker;
+    protected $httpKernel;
+    protected $twig;
+    protected $columnService;
+
     /**
      * Constructor.
      *
-     * @param Container             $container The service container
      * @param GridRegistryInterface $registry  The grid registry
      */
-    // public function __construct(GridRegistryInterface $registry)
-    public function __construct(GridRegistryInterface $registry)
+    public function __construct(
+        GridRegistryInterface $registry,
+        object $requestStack,
+        RouterInterface $router,
+        AuthorizationCheckerInterface $authorizationChecker,
+        HttpKernelInterface $httpKernel,
+        object $twig,
+        object $columnService,
+    )
     {
         $this->registry = $registry;
+        $this->requestStack = $requestStack;
+        $this->router = $router;
+        $this->authorizationChecker = $authorizationChecker;
+        $this->httpKernel = $httpKernel;
+        $this->twig = $twig;
+        $this->columnService = $columnService;
     }
 
     /**
@@ -55,7 +70,17 @@ class GridFactory implements GridFactoryInterface
         $type = $this->resolveType($type);
         $options = $this->resolveOptions($type, $source, $options);
 
-        $builder = new GridBuilder($this, $type->getName(), $options);
+        $builder = new GridBuilder(
+            $this,
+            $this->requestStack,
+            $this->router,
+            $this->authorizationChecker,
+            $this->httpKernel,
+            $this->twig,
+            $this->columnService,
+            $type->getName(),
+            $options
+        );
         $builder->setType($type);
 
         $type->buildGrid($builder, $options);
@@ -68,7 +93,7 @@ class GridFactory implements GridFactoryInterface
      */
     public function createColumn($name, $type, array $options = [])
     {
-        if (!$type instanceof Column) {
+        if (!$type instanceof ColumnInterface) {
             if (!is_string($type)) {
                 throw new UnexpectedTypeException($type, 'string, APY\DataGridBundle\Grid\Column\Column');
             }

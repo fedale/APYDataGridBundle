@@ -1,6 +1,6 @@
 <?php
 
-namespace APY\DataGridBundle\Tests\Grid;
+namespace APY\DataGridBundle\Grid\Tests;
 
 use APY\DataGridBundle\Grid\Action\MassAction;
 use APY\DataGridBundle\Grid\Action\RowAction;
@@ -4517,7 +4517,7 @@ class GridTest extends TestCase
         $this->gridId = $id;
         $this->gridHash = 'grid_' . $this->gridId;
 
-        $this->grid = new Grid($container, $this->gridId, $gridConfigInterface);
+        $this->grid = new Grid($this->gridId, $gridConfigInterface);
     }
 
     private function mockResetGridSessionWhenResetFilterIsPressed()

@@ -13,6 +13,7 @@
 namespace APY\DataGridBundle\Grid\Source;
 
 use APY\DataGridBundle\Grid\Column\Column;
+use APY\DataGridBundle\Grid\Column\ColumnInterface;
 use APY\DataGridBundle\Grid\Exception\PropertyAccessDeniedException;
 use APY\DataGridBundle\Grid\Helper\ColumnsIterator;
 use APY\DataGridBundle\Grid\Mapping\Driver\DriverInterface;
@@ -28,13 +29,17 @@ abstract class Source implements DriverInterface
     protected $count;
 
     /**
-     * @param \Doctrine\ODM\MongoDB\Query\Builder $queryBuilder
+     * @param $queryBuilder querybuilder or any other structure
+     *
+     * @return mixed
      */
     public function prepareQuery($queryBuilder)
     {
         if (is_callable($this->prepareQueryCallback)) {
-            call_user_func($this->prepareQueryCallback, $queryBuilder);
+            return call_user_func($this->prepareQueryCallback, $queryBuilder);
         }
+
+        return $queryBuilder;
     }
 
     /**
@@ -98,10 +103,18 @@ abstract class Source implements DriverInterface
     abstract public function getTotalCount($maxResults = null);
 
     /**
-     * Set container.
-     *
      * @abstract
      *
+     * @param array $parameters
+     *
+     * setting up
+     */
+    abstract public function setup(array $parameters);
+
+    /**
+     * @abstract
+     *
+     * initialization
      */
     abstract public function initialise();
 
@@ -564,7 +577,7 @@ abstract class Source implements DriverInterface
      */
     protected function prepareStringForLikeCompare($input, $type = null)
     {
-        if ($type === 'array') {
+        if (in_array($type, ["array", "simple_array"])) {
             $outputString = str_replace(':{i:0;', ':{', serialize($input));
         } else {
             $outputString = $this->removeAccents($input);
@@ -581,7 +594,7 @@ abstract class Source implements DriverInterface
         return preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $noaccentStr);
     }
 
-    protected function prepareColumnValues(Column $column, $values)
+    protected function prepareColumnValues(ColumnInterface $column, $values)
     {
         $existingValues = $column->getValues();
         if (!empty($existingValues)) {

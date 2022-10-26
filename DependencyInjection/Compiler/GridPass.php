@@ -37,5 +37,19 @@ class GridPass implements CompilerPassInterface
         foreach ($columns as $id => $tag) {
             $definition->addMethodCall('addColumn', [new Reference($id)]);
         }
+
+        $sources = $container->findTaggedServiceIds('apy_grid.source');
+        foreach ($sources as $id => $tags) {
+            foreach ($tags as $tag) {
+                $definition->addMethodCall('addSource', [$tag['alias'], new Reference($id)]);
+            }
+        }
+
+        $exports = $container->findTaggedServiceIds('apy_grid.export');
+        foreach ($exports as $id => $tags) {
+            foreach ($tags as $tag) {
+                $definition->addMethodCall('addExport', [$tag['alias'], new Reference($id)]);
+            }
+        }
     }
 }

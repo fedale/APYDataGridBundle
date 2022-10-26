@@ -1,6 +1,6 @@
 <?php
 
-namespace APY\DataGridBundle\Tests\Grid\Mapping\Metadata;
+namespace APY\DataGridBundle\Grid\Tests\Mapping\Metadata;
 
 use APY\DataGridBundle\Grid\Mapping\Driver\DriverInterface;
 use APY\DataGridBundle\Grid\Mapping\Metadata\DriverHeap;

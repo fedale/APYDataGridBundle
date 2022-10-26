@@ -21,17 +21,13 @@ use APY\DataGridBundle\Grid\Column\MassActionColumn;
 use APY\DataGridBundle\Grid\Export\ExportInterface;
 use APY\DataGridBundle\Grid\Source\Entity;
 use APY\DataGridBundle\Grid\Source\Source;
-use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Twig\TemplateWrapper;
-use Twig\Environment;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Twig\TemplateWrapper;
 
 class Grid implements GridInterface
 {
@@ -44,6 +40,7 @@ class Grid implements GridInterface
     const REQUEST_QUERY_ORDER = '_order';
     const REQUEST_QUERY_TEMPLATE = '_template';
     const REQUEST_QUERY_RESET = '_reset';
+    const REQUEST_QUERY_COLUMNS = '__columns';
 
     const SOURCE_ALREADY_SETTED_EX_MSG = 'The source of the grid is already set.';
     const SOURCE_NOT_SETTED_EX_MSG = 'The source of the grid must be set.';
@@ -77,6 +74,11 @@ class Grid implements GridInterface
     protected $session;
 
     /**
+     * @var \Symfony\Component\HttpFoundation\RequestStack
+     */
+    protected $requestStack;
+
+    /**
      * @var \Symfony\Component\HttpFoundation\Request
      */
     protected $request;
@@ -85,6 +87,16 @@ class Grid implements GridInterface
      * @var \Symfony\Component\Security\Core\Authorization\AuthorizationChecker
      */
     protected $securityContext;
+
+    /**
+     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    protected $httpKernel;
+
+    /**
+     * @var \Twig\Environment
+     */
+    protected $twig;
 
     /**
      * @var string
@@ -110,6 +122,11 @@ class Grid implements GridInterface
      * @var \APY\DataGridBundle\Grid\Source\Source
      */
     protected $source;
+
+    /**
+     *  @var \APY\DataGridBundle\Grid\Column\Column
+     */
+    protected $columnService;
 
     /**
      * @var bool
@@ -316,35 +333,37 @@ class Grid implements GridInterface
      */
     private $config;
 
-    // \Twig\Environment
-    private $twig;
-
-    // Symfony\Component\HttpKernel\HttpKernelInterface 
-    private $httpKernel;
-
     /**
      * Constructor.
      *
+     * @param object                   $requestStack
+     * @param RouterInterface          $router
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param HttpKernelInterface      $httpKernel
+     * @param object                   $twig
      * @param string                   $id        set if you are using more then one grid inside controller
      * @param GridConfigInterface|null $config    The grid configuration.
      */
-     public function __construct(
-        RouterInterface $router, 
-        RequestStack $requestStack, 
-        AuthorizationChecker $securityContext, 
-        Environment $twig,
+    public function __construct(
+        object $requestStack,
+        RouterInterface $router,
+        AuthorizationCheckerInterface $authorizationChecker,
         HttpKernelInterface $httpKernel,
-        $id = '', 
+        object $twig,
+        object $columnService,
+        $id = '',
         GridConfigInterface $config = null)
     {
         $this->config = $config;
 
+        $this->requestStack = $requestStack;
+        $this->request = $this->getCurrentRequest();
         $this->router = $router;
-        $this->request = $requestStack->getCurrentRequest();
         $this->session = $this->request->getSession();
+        $this->securityContext = $authorizationChecker;
+        $this->httpKernel = $httpKernel;
         $this->twig = $twig;
-        // $this->securityContext = $securityContext;
-        $this->securityContext = $securityContext; //$container->get('security.authorization_checker');
+        $this->columnService = $columnService;
 
         $this->id = $id;
 
@@ -356,6 +375,11 @@ class Grid implements GridInterface
                 unset($this->routeParameters[$key]);
             }
         }
+    }
+
+    public function getCurrentRequest()
+    {
+        return $this->requestStack->getCurrentRequest();
     }
 
     /**
@@ -498,7 +522,6 @@ class Grid implements GridInterface
 
         $this->source = $source;
 
-        // $this->source->initialise($this->container);
         $this->source->initialise();
 
         // Get columns from the source
@@ -630,6 +653,8 @@ class Grid implements GridInterface
 
         $this->processLimit($this->getFromRequest(self::REQUEST_QUERY_LIMIT));
 
+        $this->processColumns($this->getFromRequest(self::REQUEST_QUERY_COLUMNS));
+
         $this->saveSession();
     }
 
@@ -677,7 +702,6 @@ class Grid implements GridInterface
 
                     $subRequest = $this->request->duplicate([], null, $path);
 
-                    // $this->massActionResponse = $this->container->get('http_kernel')->handle($subRequest, \Symfony\Component\HttpKernel\HttpKernelInterface::SUB_REQUEST);
                     $this->massActionResponse = $this->httpKernel->handle($subRequest, \Symfony\Component\HttpKernel\HttpKernelInterface::SUB_REQUEST);
                 } else {
                     throw new \RuntimeException(sprintf(self::MASS_ACTION_CALLBACK_NOT_VALID_EX_MSG, $action->getCallback()));
@@ -709,9 +733,6 @@ class Grid implements GridInterface
                 $this->prepare();
 
                 $export = $this->exports[$exportId];
-                if ($export instanceof ContainerAwareInterface) {
-                    $export->setContainer($this->container);
-                }
                 $export->computeData($this);
 
                 $this->exportResponse = $export->getResponse();
@@ -890,11 +911,28 @@ class Grid implements GridInterface
         }
     }
 
+    public function getOrder()
+    {
+        return $this->get(self::REQUEST_QUERY_ORDER);
+    }
+
+    public function setOrder($order)
+    {
+        $this->set(self::REQUEST_QUERY_ORDER, $order);
+
+        return $this;
+    }
+
     protected function processLimit($limit)
     {
         if (isset($this->limits[$limit])) {
             $this->set(self::REQUEST_QUERY_LIMIT, $limit);
         }
+    }
+
+    protected function processColumns($columns)
+    {
+        $this->set(self::REQUEST_QUERY_COLUMNS, $columns);
     }
 
     protected function setDefaultSessionData()
@@ -1025,6 +1063,17 @@ class Grid implements GridInterface
         } else {
             $this->limit = key($this->limits);
         }
+
+        // Columns
+        if (($columns = $this->get(self::REQUEST_QUERY_COLUMNS)) !== null) {
+            foreach ($this->columns as $column) {
+                if (in_array($column->getId(), $columns)) {
+                    $column->setVisible(true);
+                } else {
+                    $column->setVisible(false);
+                }
+            }
+        }
     }
 
     /**
@@ -1063,7 +1112,7 @@ class Grid implements GridInterface
                 if (($actionColumn = $this->columns->hasColumnById($column, true))) {
                     $actionColumn->setRowActions($rowActions);
                 } else {
-                    $actionColumn = new ActionsColumn($column, $this->actionsColumnTitle, $rowActions);
+                    $actionColumn = new ActionsColumn(clone $this->columnService, $column, $this->actionsColumnTitle, $rowActions);
                     if ($this->actionsColumnSize > -1) {
                         $actionColumn->setSize($this->actionsColumnSize);
                     }
@@ -1075,7 +1124,7 @@ class Grid implements GridInterface
 
         //add mass actions column
         if (count($this->massActions) > 0) {
-            $this->columns->addColumn(new MassActionColumn(), 1);
+            $this->columns->addColumn(new MassActionColumn(clone $this->columnService), 1);
         }
 
         $primaryColumnId = $this->columns->getPrimaryColumn()->getId();
@@ -2228,6 +2277,7 @@ class Grid implements GridInterface
                 self::REQUEST_QUERY_ORDER,
                 self::REQUEST_QUERY_TEMPLATE,
                 self::REQUEST_QUERY_RESET,
+                self::REQUEST_QUERY_COLUMNS,
                 MassActionColumn::ID,
             ];
 
@@ -2235,23 +2285,65 @@ class Grid implements GridInterface
                 unset($session[$request_query]);
             }
 
-            foreach ($session as $columnId => $sessionFilter) {
-                if (isset($sessionFilter['operator'])) {
-                    $operator = $sessionFilter['operator'];
-                    unset($sessionFilter['operator']);
-                } else {
-                    $operator = $this->getColumn($columnId)->getDefaultOperator();
-                }
-
-                if (!isset($sessionFilter['to']) && isset($sessionFilter['from'])) {
-                    $sessionFilter = $sessionFilter['from'];
-                }
-
-                $this->sessionFilters[$columnId] = new Filter($operator, $sessionFilter);
-            }
+            $this->sessionFilters = $this->getFiltersFromSessionData($session);
         }
 
         return $this->sessionFilters;
+    }
+
+    /**
+     * transforms session data to array of filters
+     *
+     * @param array $data
+     * @return array
+     */
+    public function getFiltersFromSessionData(array $data)
+    {
+        $res = [];
+
+        foreach ($data as $columnId => $filter) {
+            if (isset($filter['operator'])) {
+                $operator = $filter['operator'];
+                unset($filter["operator"]);
+            } else {
+                $operator = $this->getColumn($columnId)->getDefaultOperator();
+            }
+
+            if (!isset($filter['to']) && isset($filter['from'])) {
+                $filter = $filter['from'];
+            }
+
+            $res[$columnId] = new Filter($operator, $filter);
+        }
+
+        return $res;
+    }
+
+    /**
+     * transforms array of filters to session data
+     *
+     * @param array $data
+     * @return array
+     */
+    public function getSessionDataFromFilters(array $data)
+    {
+        $res = [];
+
+        foreach ($data as $columnId => $filter) {
+            $res[$columnId] = [
+                "operator" => $filter->getOperator(),
+            ];
+            $value = $filter->getValue();
+            if (is_array($value)) {
+                foreach ($value as $key => $val) {
+                    $res[$columnId][$key] = $val;
+                }
+            } else {
+                $res[$columnId]["from"] = $value;
+            }
+        }
+
+        return $res;
     }
 
     /**

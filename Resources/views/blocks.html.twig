@@ -4,6 +4,7 @@
 {% if grid.totalCount > 0 or grid.isFiltered or grid.noDataMessage is same as (false) %}
     <form id="{{ grid.hash }}" action="{{ grid.routeUrl }}" method="post">
         <div class="grid_header">
+        {{ grid_columns(grid) }}
         {% if grid.massActions|length > 0 %}
             {{ grid_actions(grid) }}
         {% endif %}
@@ -43,7 +44,7 @@
 {% block grid_no_data %}<p class="no_data">{{ grid.noDataMessage|default('No data')|trans|raw }}</p>{% endblock grid_no_data %}
 {# --------------------------------------------------- grid_no_result ------------------------------------------------- #}
 {% block grid_no_result %}
-{% apply spaceless %}
+{% spaceless %}
 {% set nbColumns = 0 %}
 {% for column in grid.columns %}
     {% if column.visible(grid.isReadyForExport) %}
@@ -53,7 +54,7 @@
 <tr class="grid-row-cells">
     <td class="last-column last-row" colspan="{{ nbColumns }}" style="text-align: center;">{{ grid.noResultMessage|default('No result')|trans|raw }}</td>
 </tr>
-{% endapply %}
+{% endspaceless %}
 {% endblock grid_no_result %}
 {# --------------------------------------------------- grid_titles -------------------------------------------------- #}
 {% block grid_titles %}
@@ -62,7 +63,7 @@
         {% set translation_domain = column.translationDomain %}
         {% if column.visible(grid.isReadyForExport) %}
             <th class="{% if column.align != 'left'%}align-{{ column.align }}{% endif %}{% if column.class %} {{ column.class }}{% endif %}{% if loop.last %} last-column{% endif %}"{% if(column.size > -1) %} style="width:{{ column.size }}px;"{% endif %}>
-            {% apply spaceless %}
+            {%- spaceless %}
             {% if column.type == 'massaction' %}
                 <input type="checkbox" class="grid-mass-selector" onclick="{{ grid.hash }}_markVisible(this.checked);"/>
             {% else %}
@@ -88,7 +89,7 @@
                     {{ columnTitle }}
                 {% endif %}
             {% endif %}
-            {% endapply -%}
+            {% endspaceless -%}
             </th>
         {% endif %}
     {% endfor %}
@@ -128,7 +129,7 @@
 {% block grid_rows %}
     {% for row in grid.rows %}
     {% set last_row = loop.last %}
-    {% apply spaceless %}
+    {% spaceless %}
         {% set gridColumns %}
             {% for column in grid.columns %}
                 {% if column.visible(grid.isReadyForExport) %}
@@ -138,7 +139,7 @@
         {% endset %}
         <tr{% if row.color != '' %} style="background-color:{{ row.color }};"{% endif %} class="grid-row-cells {{ cycle(['odd', 'even'], loop.index) }}{% if row.class != '' %} {{ row.class }}{% endif %}">
         {{ gridColumns }}
-    {% endapply %}
+    {% endspaceless %}
     </tr>
     {% else %}
         {{ grid_no_result(grid) }}
@@ -163,11 +164,11 @@
 {# ---------------------------------------------------- grid_pager_selectpage -------------------------------------------------- #}
 {% block grid_pager_selectpage %}
 {{ 'Page'|trans }}
-{% apply spaceless %}
+{% spaceless %}
 <input type="button" class="prev" {% if grid.page <= 0 %}disabled="disabled"{% endif %} value="<" onclick="return {{ grid.hash }}_previousPage();"/>
 <input type="text" class="current" value="{{ grid.page + 1 }}" size="2" onkeypress="return {{ grid.hash }}_enterPage(event, parseInt(this.value)-1);"/>
 <input type="button" value=">" class="next" {% if grid.page >= grid.pageCount-1 %}disabled="disabled"{% endif %} onclick="return {{ grid.hash }}_nextPage();"/> {{ 'of %count%'|trans({ '%count%' : grid.pageCount }) }}
-{% endapply %}
+{% endspaceless %}
 {% endblock grid_pager_selectpage %}
 {# ---------------------------------------------------- grid_pager_results_perpage -------------------------------------------------- #}
 {% block grid_pager_results_perpage %}
@@ -188,7 +189,7 @@
         <a href="#" onclick="return {{ grid.hash }}_markAll(false);">{{ 'Deselect all'|trans }}</a>
         <span class="mass-actions-selected" id="{{ grid.hash }}_mass_action_selected"></span>
     </span>
-    {% apply spaceless %}
+    {% spaceless %}
     <div style="float:right;" class="grid_massactions">
         {{ 'Action'|trans }}
         <input type="hidden" id="{{ grid.hash }}_mass_action_all" name="{{ grid.hash }}[{{ constant('APY\\DataGridBundle\\Grid\\Grid::REQUEST_QUERY_MASS_ACTION_ALL_KEYS_SELECTED') }}]" value="0"/>
@@ -200,13 +201,13 @@
         </select>
         <input type="submit"  value="{{ 'Submit Action'|trans }}"/>
     </div>
-    {% endapply %}
+    {% endspaceless %}
 </div>
 {% endblock grid_actions %}
 {# --------------------------------------------------- grid_exports ------------------------------------------------- #}
 {% block grid_exports %}
 <div class="exports" style="float:right">
-    {% apply spaceless %}
+    {% spaceless %}
         {{ 'Export'|trans }}
             <select name="{{grid.hash}}[{{ constant('APY\\DataGridBundle\\Grid\\Grid::REQUEST_QUERY_EXPORT') }}]">
             <option value="-1"></option>
@@ -215,13 +216,13 @@
             {% endfor %}
         </select>
         <input type="submit" value="{{ 'Export'|trans }}"/>
-    {% endapply %}
+    {% endspaceless %}
 </div>
 {% endblock grid_exports %}
 {# --------------------------------------------------- grid_tweaks ------------------------------------------------- #}
 {% block grid_tweaks %}
 <div class="tweaks" style="float:right">
-    {% apply spaceless %}
+    {% spaceless %}
         {{ 'Tweaks'|trans }}
             <select name="{{grid.hash}}[{{ constant('APY\\DataGridBundle\\Grid\\Grid::REQUEST_QUERY_TWEAK') }}]">
             <option value=""></option>
@@ -230,7 +231,7 @@
             {% endfor %}
         </select>
         <input type="submit" value="{{ 'Tweak'|trans }}"/>
-    {% endapply %}
+    {% endspaceless %}
 </div>
 {% endblock grid_tweaks %}
 {# ------------------------------------------------ grid_column_actions_cell --------------------------------------------- #}
@@ -299,7 +300,7 @@
 {% endblock grid_column_type_simple_array_cell %}
 {# ------------------------------------------- grid_column_cell ---------------------------------------- #}
 {% block grid_column_cell %}
-{% apply spaceless %}
+{%- spaceless %}
 {% if column.filterable and column.searchOnClick %}
     {% set sourceValue = sourceValue is defined ? sourceValue : row.field(column.id) %}
     <a href="?{{ grid.hash }}[{{ column.id }}][from]={{ sourceValue | url_encode() }}" class="searchOnClick">{{ value }}</a>
@@ -308,7 +309,7 @@
 {% else %}
     {{ value|escape(column.safe)|raw }}
 {% endif %}
-{% endapply -%}
+{% endspaceless -%}
 {% endblock grid_column_cell %}
 {# -------------------------------------------- grid_column_operator --------------------------------------- #}
 {% block grid_column_operator %}
@@ -328,9 +329,10 @@
 {% set btweOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_BTWE') %}
 {% set isNullOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_ISNULL') %}
 {% set isNotNullOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_ISNOTNULL') %}
-{% set op = column.data.operator ?? column.defaultOperator %}
-{% set from = column.data.from ?? null %}
-{% set to = column.data.to ?? null %}
+
+{% set op = column.data.operator is defined ? column.data.operator : column.defaultOperator %}
+{% set from = column.data.from is defined ? column.data.from : null %}
+{% set to = column.data.to is defined ? column.data.to : null %}
 <span class="grid-filter-input">
     {{ grid_column_operator(column, grid, op, submitOnChange) }}
     <span class="grid-filter-input-query">
@@ -345,9 +347,11 @@
 {% set btweOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_BTWE') %}
 {% set isNullOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_ISNULL') %}
 {% set isNotNullOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_ISNOTNULL') %}
-{% set op = column.data.operator ?? column.defaultOperator %}
-{% set from = column.data.from ?? null %}
-{% set to = column.data.to ?? null %}
+{% if column %}
+  {% set op = column.data.operator is defined ? column.data.operator : column.defaultOperator %}
+  {% set from = column.data.from is defined ? column.data.from : null %}
+  {% set to = column.data.to is defined ? column.data.to : null %}
+{% endif %}
 {% set multiple = column.selectMulti %}
 {% set expanded = column.selectExpanded %}
 <span class="grid-filter-select">
@@ -391,8 +395,23 @@
 {% block grid_column_filter_type_actions %}
     <a class="grid-reset" href="{{ grid_url('reset', grid) }}">{{ 'Reset'|trans }}</a>
 {% endblock grid_column_filter_type_actions %}
-
-
+{# --------------------------------------------------- grid_columns ------------------------------------------------- #}
+{% block grid_columns %}
+    <div class="columns">
+        {% spaceless %}
+            <div class="grid_columns">
+                <select multiple name="{{ grid.hash }}[{{ constant('APY\\DataGridBundle\\Grid\\Grid::REQUEST_QUERY_COLUMNS') }}][]">
+                    {% for column in grid.columns %}
+                        {% if column.visibleForSource %}
+                            <option value="{{ column.id }}"{% if column.visible %} selected="selected"{% endif %}>{{ column.title|trans }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <input type="submit"  value="{{ 'Submit Action'|trans }}"/>
+            </div>
+        {% endspaceless %}
+    </div>
+{% endblock grid_columns %}
 
 {# --------------------------------------------------- grid_scripts -------------------------------------------------- #}
 {% block grid_scripts %}
