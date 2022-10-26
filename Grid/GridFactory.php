@@ -66,7 +66,7 @@ class GridFactory implements GridFactoryInterface
      * {@inheritdoc}
      */
     public function createBuilder($type = 'grid', Source $source = null, array $options = [])
-    {
+    {        
         $type = $this->resolveType($type);
         $options = $this->resolveOptions($type, $source, $options);
 
@@ -124,10 +124,10 @@ class GridFactory implements GridFactoryInterface
     private function resolveType($type)
     {
         if (!$type instanceof GridTypeInterface) {
-            if (!is_string($type)) {
+            if (!is_string($type)) {                
                 throw new UnexpectedTypeException($type, 'string, APY\DataGridBundle\Grid\GridTypeInterface');
             }
-
+            dd($this->registry);
             $type = $this->registry->getType($type);
         }
 
