@@ -49,8 +49,13 @@
                 <argument>%apy_data_grid.actions_columns_title%</argument>
             </call>
         </service>
-        
+
+        <!-- @ddm -->
         <service id="%grid.class%" alias="grid" public="true">
+        </service>
+
+        <!-- @ddm -->
+        <service id="APY\DataGridBundle\Grid\GridManager" alias="grid.manager" public="true">
         </service>
 
         <service id="grid.manager" class="%grid.manager.class%">

@@ -127,7 +127,7 @@ class GridFactory implements GridFactoryInterface
             if (!is_string($type)) {                
                 throw new UnexpectedTypeException($type, 'string, APY\DataGridBundle\Grid\GridTypeInterface');
             }
-            dd($this->registry);
+            
             $type = $this->registry->getType($type);
         }
 
