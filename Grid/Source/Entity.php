@@ -141,6 +141,7 @@ class Entity extends Source
      */
     public function __construct(object $doctrine, object $mapping)
     {
+        // dd($doctrine, $mapping);
         $this->doctrine = $doctrine;
         $this->mapping = $mapping;
 
@@ -164,9 +165,9 @@ class Entity extends Source
 
     public function initialise()
     {
-        $this->entityName = 'App\Entity\Customer\Customer';
-        $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $this->doctrine->getManager($this->managerName) : $this->doctrine->getEntityManager($this->managerName);
-        // $this->ormMetadata = $this->manager->getClassMetadata($this->entityName);
+        // $this->entityName = 'App\Entity\Customer\Customer';
+        // $this->manager = version_compare(Kernel::VERSION, '2.1.0', '>=') ? $this->doctrine->getManager($this->managerName) : $this->doctrine->getEntityManager($this->managerName);
+        $this->manager = $this->doctrine->getManager($this->managerName);
         $this->ormMetadata = $this->manager->getClassMetadata($this->entityName);
 
         $this->class = $this->ormMetadata->getReflectionClass()->name;

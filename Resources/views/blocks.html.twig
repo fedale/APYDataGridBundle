@@ -336,7 +336,7 @@
 <span class="grid-filter-input">
     {{ grid_column_operator(column, grid, op, submitOnChange) }}
     <span class="grid-filter-input-query">
-        <input type="{{ column.inputType }}" value="{{ from }}" class="grid-filter-input-query-from" name="{{ grid.hash }}[{{ column.id }}][from]" id="{{ grid.hash }}__{{ column.id }}__query__from" {% if submitOnChange is same as (true) %}onkeypress="return {{ grid.hash }}_submitForm(event, this.form);"{% endif%} {{ ( op == isNullOperator or op == isNotNullOperator ) ? 'style="display: none;" disabled="disabled"' : '' }} />
+        <input type="{{ column.inputType }}" value="{{ from }}" class="grid-filter-input-query-from" name="{{ grid.hash }}[{{ column.id }}][from]" id="{{ grid.hash }}__{{ column.id }}__query__from" {{ ( op == isNullOperator or op == isNotNullOperator ) ? 'style="display: none;" disabled="disabled"' : '' }} />
         <input type="{{ column.inputType }}" value="{{ to }}" class="grid-filter-input-query-to" name="{{ grid.hash }}[{{ column.id }}][to]" id="{{ grid.hash }}__{{ column.id }}__query__to" {% if submitOnChange is same as (true) %}onkeypress="return {{ grid.hash }}_submitForm(event, this.form);"{% endif%} {{ ( op == btwOperator or op == btweOperator ) ? '': 'style="display: none;" disabled="disabled"' }} />
     </span>
 </span>
@@ -360,23 +360,23 @@
     {% if expanded %}
         <span class="grid-filter-select-query-from" id="{{ grid.hash }}__{{ column.id }}__query__from" {{ ( op == isNullOperator or op == isNotNullOperator ) ? 'style="display: none;" disabled="disabled"' : '' }}>
         {% for key, value in column.values %}
-            <span><input type="{% if multiple %}checkbox{% else %}radio{% endif %}" name="{{ grid.hash }}[{{ column.id }}][from][]" value="{{ key }}" {% if key in from %} checked="checked"{% endif %} {% if submitOnChange is same as (true) %}onclick="return {{ grid.hash }}_submitForm(event, this.form);"{% endif%}/><label>{{ value }}</label></span>
+            <span><input type="{% if multiple %}checkbox{% else %}radio{% endif %}" name="{{ grid.hash }}[{{ column.id }}][from][]" value="{{ key }}" {% if key in from %} checked="checked"{% endif %} /><label>{{ value }}</label></span>
         {% endfor %}
         </span>
         <span class="grid-filter-select-query-to" id="{{ grid.hash }}__{{ column.id }}__query__to" {{ ( op == btwOperator or op == btweOperator ) ? '': 'style="display: none;" disabled="disabled"' }}>
         {% for key, value in column.values %}
-            <span><input type="{% if multiple %}checkbox{% else %}radio{% endif %}" name="{{ grid.hash }}[{{ column.id }}][to]" value="{{ key }}" {% if not to is null and to == key %} checked="checked"{% endif %} {% if submitOnChange is same as (true) %}onclick="return {{ grid.hash }}_submitForm(event, this.form);"{% endif%}/><label>{{ value }}</label></span>
+            <span><input type="{% if multiple %}checkbox{% else %}radio{% endif %}" name="{{ grid.hash }}[{{ column.id }}][to]" value="{{ key }}" {% if not to is null and to == key %} checked="checked"{% endif %} /><label>{{ value }}</label></span>
         {% endfor %}
         </span>
         {% if multiple %}<input type="submit" value="{{ 'Go'|trans }}" />{% endif %}
     {% else %}
-        <select{% if multiple %} multiple="multiple"{% endif %} name="{{ grid.hash }}[{{ column.id }}][from][]" class="grid-filter-select-query-from" id="{{ grid.hash }}__{{ column.id }}__query__from" {% if submitOnChange is same as (true) %}onchange="return {{ grid.hash }}_submitForm(event, this.form);"{% endif%} {{ ( op == isNullOperator or op == isNotNullOperator ) ? 'style="display: none;" disabled="disabled"' : '' }}>
+        <select{% if multiple %} multiple="multiple"{% endif %} name="{{ grid.hash }}[{{ column.id }}][from][]" class="grid-filter-select-query-from" id="{{ grid.hash }}__{{ column.id }}__query__from" {{ ( op == isNullOperator or op == isNotNullOperator ) ? 'style="display: none;" disabled="disabled"' : '' }}>
             <option value="">&nbsp;</option>
             {% for key, value in column.values %}
                 <option value="{{ key }}"{% if key in from %} selected="selected"{% endif %}>{{ value }}</option>
             {% endfor %}
         </select>
-        <select name="{{ grid.hash }}[{{ column.id }}][to]" class="grid-filter-select-query-to" id="{{ grid.hash }}__{{ column.id }}__query__to" {% if submitOnChange is same as (true) %}onchange="return {{ grid.hash }}_submitForm(event, this.form);"{% endif%} {{ ( op == btwOperator or op == btweOperator ) ? '': 'style="display: none;" disabled="disabled"' }}>
+        <select name="{{ grid.hash }}[{{ column.id }}][to]" class="grid-filter-select-query-to" id="{{ grid.hash }}__{{ column.id }}__query__to" {{ ( op == btwOperator or op == btweOperator ) ? '': 'style="display: none;" disabled="disabled"' }}>
             <option value="">&nbsp;</option>
             {% for key, value in column.values %}
                 <option value="{{ key }}"{% if not to is null and to == key %} selected="selected"{% endif %}>{{ value }}</option>
@@ -425,7 +425,6 @@
 {{ grid_scripts_mark_visible(grid) }}
 {{ grid_scripts_mark_all(grid) }}
 {{ grid_scripts_switch_operator(grid) }}
-{{ grid_scripts_submit_form(grid) }}
 {{ grid_scripts_ajax(grid) }}
 </script>
 {% endblock grid_scripts %}
@@ -433,6 +432,7 @@
 {% block grid_scripts_goto %}
 function {{ grid.hash }}_goto(url)
 {
+    console.log('_goto');
     if (/MSIE (8\.\d+);/.test(navigator.userAgent)) {
         var referLink = document.createElement('a');
         referLink.href = url;
@@ -449,6 +449,7 @@ function {{ grid.hash }}_goto(url)
 {% block grid_scripts_reset %}
 function {{ grid.hash }}_reset()
 {
+    console.log('_reset');
     {{ grid.hash }}_goto('{{ grid_url('reset', grid) }}');
 
     return false;
@@ -458,6 +459,7 @@ function {{ grid.hash }}_reset()
 {% block grid_scripts_previous_page %}
 function {{ grid.hash }}_previousPage()
 {
+    console.log('_previousPage');
     {{ grid.hash }}_goto('{{ grid_url('page', grid, grid.page - 1) }}');
 
     return false;
@@ -467,6 +469,7 @@ function {{ grid.hash }}_previousPage()
 {% block grid_scripts_next_page %}
 function {{ grid.hash }}_nextPage()
 {
+    console.log('_nextPage');
     {{ grid.hash }}_goto('{{ grid_url('page', grid, grid.page + 1) }}');
 
     return false;
@@ -476,6 +479,7 @@ function {{ grid.hash }}_nextPage()
 {% block grid_scripts_enter_page %}
 function {{ grid.hash }}_enterPage(event, page)
 {
+    console.log('_enterPage');
     key = event.which;
 
     if (window.event) {
@@ -493,6 +497,7 @@ function {{ grid.hash }}_enterPage(event, page)
 {% block grid_scripts_results_per_page %}
 function {{ grid.hash }}_resultsPerPage(limit)
 {
+    console.log('_resultPerPage');
     {{ grid.hash }}_goto('{{ grid_url('limit', grid) }}' + limit);
 
     return true;
@@ -502,6 +507,7 @@ function {{ grid.hash }}_resultsPerPage(limit)
 {% block grid_scripts_mark_visible %}
 function {{ grid.hash }}_markVisible(select)
 {
+    console.log('_markVisibile');
     var form = document.getElementById('{{ grid.hash }}');
 
     var counter = 0;
@@ -532,6 +538,7 @@ function {{ grid.hash }}_markVisible(select)
 {% block grid_scripts_mark_all %}
 function {{ grid.hash }}_markAll(select)
 {
+    console.log('_markAll');
     var form = document.getElementById('{{ grid.hash }}');
 
     for (var i=0; i < form.elements.length; i++ ) {
@@ -561,6 +568,7 @@ function {{ grid.hash }}_markAll(select)
 {% set isNotNullOperator = constant('APY\\DataGridBundle\\Grid\\Column\\Column::OPERATOR_ISNOTNULL') %}
 function {{ grid.hash }}_switchOperator(elt, query_, submitOnChange)
 {
+    console.log('_switchOperator');
 	submitOnChange = (typeof submitOnChange == 'undefined') ? true : submitOnChange;
     var inputFrom = document.getElementById(query_+'from');
     var inputTo = document.getElementById(query_+'to');
@@ -585,23 +593,6 @@ function {{ grid.hash }}_switchOperator(elt, query_, submitOnChange)
     }
 }
 {% endblock grid_scripts_switch_operator %}
-
-{% block grid_scripts_submit_form %}
-function {{ grid.hash }}_submitForm(event, form)
-{
-    key = event.which;
-
-    if (window.event) {
-        key = window.event.keyCode; //IE
-    }
-
-    if (event.type != 'keypress' || key == 13) {
-        form.submit();
-    }
-
-    return true;
-}
-{% endblock grid_scripts_submit_form %}
 
 {% block grid_scripts_ajax %}
 {% endblock grid_scripts_ajax %}

@@ -986,6 +986,7 @@ class Grid implements GridInterface
     protected function processFilters($permanent = true)
     {
         foreach (($permanent ? $this->permanentFilters : $this->defaultFilters) as $columnId => $value) {
+            
             /* @var $column Column */
             $column = $this->columns->getColumnById($columnId);
 
