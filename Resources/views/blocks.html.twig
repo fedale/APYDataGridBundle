@@ -2,7 +2,7 @@
 {% block grid %}
 <div class="grid">
 {% if grid.totalCount > 0 or grid.isFiltered or grid.noDataMessage is same as (false) %}
-    <form id="{{ grid.hash }}" action="{{ grid.routeUrl }}" method="post">
+    <form id="{{ grid.hash }}" action="{{ grid.routeUrl }}" method="GET">
         <div class="grid_header">
         {{ grid_columns(grid) }}
         {% if grid.massActions|length > 0 %}
@@ -109,7 +109,7 @@
 {% block grid_search %}
 {% if grid.isFilterSectionVisible %}
     <div class="grid-search">
-        <form id="{{ grid.hash }}_search" action="{{ grid.routeUrl }}" method="post">
+        <form id="{{ grid.hash }}_search" action="{{ grid.routeUrl }}" method="GET">
         {% for column in grid.columns %}
             {% if column.isFilterable and column.type not in ['actions', 'massaction'] %}
                 {% if column.usePrefixTitle == true %}
